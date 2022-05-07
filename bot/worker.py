@@ -113,7 +113,7 @@ async def encod(event):
         kk = dl.split("/")[-1]
         aa = kk.split(".")[-1]
         rr = f"encode"
-        bb = kk.replace(f".{aa}", " [Encoded].mkv")
+        bb = kk.replace(f".{aa}", " [@AnimeColony].mkv")
         out = f"{rr}/{bb}"
         thum = "thumb.jpg"
         dtime = ts(int((es - s).seconds) * 1000)
@@ -135,7 +135,7 @@ async def encod(event):
         er = stderr.decode()
         try:
             if er:
-                await e.edit(str(er) + "\n\n**ERROR** Contact @danish_00")
+                await e.edit(str(er) + "\n\n**ERROR** Contact zippercartoonistrequestgroup")
                 WORKING.clear()
                 os.remove(dl)
                 return os.remove(out)
