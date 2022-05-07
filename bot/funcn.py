@@ -1,19 +1,25 @@
 #    This file is part of the CompressorQueue distribution.
 #    Copyright (c) 2021 Danish_00
-#    Script Improved by Zylern
-
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, version 3.
+#
+#    This program is distributed in the hope that it will be useful, but
+#    WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#    General Public License for more details.
+#
+# License can be found in <
+# https://github.com/1Danish-00/CompressorQueue/blob/main/License> .
 
 from . import *
 from .config import *
-from .worker import *
-from asyncio import create_subprocess_shell as asyncrunapp
-from asyncio.subprocess import PIPE as asyncPIPE
-import psutil, os, signal
-from bot import ffmpegcode, LOG_FILE_NAME
 
 WORKING = []
 QUEUE = {}
 OK = {}
+
 uptime = dt.now()
 os.system(f"wget {THUMB} -O thumb.jpg")
 
@@ -76,14 +82,14 @@ async def progress(current, total, event, start, type_of_ps, file=None):
         percentage = current * 100 / total
         speed = current / diff
         time_to_completion = round((total - current) / speed) * 1000
-        progress_str = "{0}{1}** {2}%**\n\n".format(
-            "".join(["■" for i in range(math.floor(percentage / 10))]),
-            "".join(["□" for i in range(10 - math.floor(percentage / 10))]),
+        progress_str = "`[{0}{1}] {2}%`\n\n".format(
+            "".join(["●" for i in range(math.floor(percentage / 5))]),
+            "".join(["○" for i in range(20 - math.floor(percentage / 5))]),
             round(percentage, 2),
         )
         tmp = (
             progress_str
-            + "**✅ Progress:** {0} \n\n**📁 Total Size:** {1}\n\n**🚀 Speed:** {2}/s\n\n**⏰ Time Left:** {3}\n".format(
+            + "`{0} of {1}`\n\n`✦ Speed: {2}/s`\n\n`✦ ETA: {3}`\n\n".format(
                 hbs(current),
                 hbs(total),
                 hbs(speed),
@@ -92,42 +98,10 @@ async def progress(current, total, event, start, type_of_ps, file=None):
         )
         if file:
             await event.edit(
-                "{}\n\nFile Name: {}\n\n{}".format(type_of_ps, file, tmp)
+                "`✦ {}`\n\n`File Name: {}`\n\n{}".format(type_of_ps, file, tmp)
             )
         else:
-            await event.edit("{}\n\n{}".format(type_of_ps, tmp))
-
-
-async def test(event):
-    try:
-        zylern = "speedtest --simple"
-        fetch = await asyncrunapp(
-            zylern,
-            stdout=asyncPIPE,
-            stderr=asyncPIPE,
-        )
-        stdout, stderr = await fetch.communicate()
-        result = str(stdout.decode().strip()) \
-            + str(stderr.decode().strip())
-        await event.reply("**" + result + "**")
-    except FileNotFoundError:
-        await event.reply("**Install speedtest-cli**")
-
-
-async def sysinfo(event):
-    try:
-        zyl = "neofetch --stdout"
-        fetch = await asyncrunapp(
-            zyl,
-            stdout=asyncPIPE,
-            stderr=asyncPIPE,
-        )
-        stdout, stderr = await fetch.communicate()
-        result = str(stdout.decode().strip()) \
-            + str(stderr.decode().strip())
-        await event.reply("**" + result + "**")
-    except FileNotFoundError:
-        await event.reply("**Install neofetch first**")
+            await event.edit("`✦ {}`\n\n{}".format(type_of_ps, tmp))
 
 
 async def info(file, event):
@@ -139,9 +113,9 @@ async def info(file, event):
     stdout, stderr = process.communicate()
     out = stdout.decode()
     client = TelegraphPoster(use_api=True)
-    client.create_api_token("TGVid-Comp-Mediainfo")
+    client.create_api_token("Mediainfo")
     page = client.post(
-        title="TGVid-Comp-Mediainfo",
+        title="Mediainfo",
         author=((await event.client.get_me()).first_name),
         author_url=f"https://t.me/{((await event.client.get_me()).username)}",
         text=out,
@@ -169,108 +143,8 @@ async def skip(e):
             WORKING.clear()
             QUEUE.pop(int(id))
         await e.delete()
-        os.system("rm -rf downloads/*")
-        os.system("rm -rf encode/*")
-        for proc in psutil.process_iter():
-            processName = proc.name()
-            processID = proc.pid
-            print(processName , ' - ', processID)
-            if(processName == "ffmpeg"):
-             os.kill(processID,signal.SIGKILL)
+        os.remove(dl)
+        os.remove(out)
     except BaseException:
         pass
     return
-
-
-async def renew(e):
-    if str(e.sender_id) not in OWNER and event.sender_id !=DEV:
-        return
-    await e.reply("**Cleared Queued, Working Files and Cached Downloads!**")
-    WORKING.clear()
-    QUEUE.clear()
-    os.system("rm -rf downloads/*")
-    os.system("rm -rf encode/*")
-    for proc in psutil.process_iter():
-        processName = proc.name()
-        processID = proc.pid
-        print(processName , ' - ', processID)
-        if (processName == "ffmpeg"):
-         os.kill (processID,signal.SIGKILL)
-    return
-
-
-async def coding(e):
-    if str(e.sender_id) not in OWNER and event.sender_id !=DEV:
-        return
-    ffmpeg = e.text.split(" ", maxsplit=1)[1]
-    ffmpegcode.clear()
-    ffmpegcode.insert(0, f"""{ffmpeg}""")
-    await e.reply(f"**Changed FFMPEG Code to**\n\n`{ffmpeg}`")
-    return
-
-
-async def getlogs(e):
-    if str(e.sender_id) not in OWNER and event.sender_id !=DEV:
-        return
-    await e.client.send_file(e.chat_id, file=LOG_FILE_NAME, force_document=True)
-
-
-async def getthumb(e):
-    if str(e.sender_id) not in OWNER and event.sender_id !=DEV:
-        return
-    await e.client.send_file(e.chat_id, file="/bot/thumb.jpg", force_document=False, caption="**Your Current Thumbnail.**")
-
-
-async def getcode(e):
-    if str(e.sender_id) not in OWNER and event.sender_id !=DEV:
-        return
-    await e.reply(f"**Your Current FFMPEG Code is**\n\n`{ffmpegcode[0]}`")
-    return
-
-
-async def clearqueue(e):
-    if str(e.sender_id) not in OWNER and event.sender_id !=DEV:
-        return
-    await e.reply("**Cleared Queued Files!**")
-    QUEUE.clear()
-    return
-
-
-async def fast_download(e, download_url, filename=None):
-    def progress_callback(d, t):
-        return (
-            asyncio.get_event_loop().create_task(
-                progress(
-                    d,
-                    t,
-                    e,
-                    time.time(),
-                    f"**📥 Downloading video from {download_url}**",
-                )
-            ),
-        )
-
-
-    async def _maybe_await(value):
-        if inspect.isawaitable(value):
-            return await value
-        else:
-            return value
-
-
-    async with aiohttp.ClientSession() as session:
-        async with session.get(download_url, timeout=None) as response:
-            if not filename:
-                filename = download_url.rpartition("/")[-1]
-            filename = os.path.join("downloads", filename)
-            total_size = int(response.headers.get("content-length", 0)) or None
-            downloaded_size = 0
-            with open(filename, "wb") as f:
-                async for chunk in response.content.iter_chunked(1024):
-                    if chunk:
-                        f.write(chunk)
-                        downloaded_size += len(chunk)
-                        await _maybe_await(
-                            progress_callback(downloaded_size, total_size)
-                        )
-            return filename
